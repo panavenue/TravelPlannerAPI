@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Servlet implementation class RecommendPath
  */
-@WebServlet("/RecommendPath")
+@WebServlet("/path")
 public class RecommendPath extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
