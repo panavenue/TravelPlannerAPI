@@ -5,78 +5,95 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import entity.User;
-import entity.Views;
+import entity.Day;
+import entity.POI;
 
 public class ViewRecommendation {
-
-	static class ListHourPair{
-		double hoursRemain;
-		List<Views> list;
-		ListHourPair(double hoursRemain, List<Views> list){
-			this.hoursRemain = hoursRemain;
-			this.list = list;
-		}
-	}
+	private static final String ID = "id";
+	private static final String RATING = "rating";
+	private static final String DURATION = "expectedStayDuration";
+	private static final String LAT = "lat";
+	private static final String LONG = "long";
 	
-	public static List<List<Views>> generatePath(User u, List<Views> listFromFront){
+	public List<POI> getFromAndroid(JSONArray inputs) throws JSONException{
+		List<POI> POIList = new ArrayList<>();
+		for(int i = 0; i < inputs.length(); i++) {
+			JSONObject obj = inputs.getJSONObject(i);
+			POI.POIBuilder builder = new POI.POIBuilder();
+			if(!obj.isNull(ID)) {
+				builder.setID(obj.getString(ID));
+			}
+			if(!obj.isNull(DURATION)) {
+				builder.setDURATION(obj.getDouble(DURATION));
+			}
+			if(!obj.isNull(RATING)) {
+				builder.setRATING(obj.getDouble(RATING));
+			}
+			if(!obj.isNull(LAT)) {
+				builder.setLAT(obj.getDouble(LAT));
+			}
+			if(!obj.isNull(LONG)) {
+				builder.setLONG(obj.getDouble(LONG));
+			}
+			POIList.add(builder.build());
+		}
+		return POIList;
+	}
+	public static List<Day> generatePath(User u, List<POI> listFromFront){
 		int hoursPerDay = u.getHoursPerDay();
 		int numberOfDays = u.getNumberOfDays();
-		
-		PriorityQueue<Views> pq = new PriorityQueue<Views>(new Comparator<Views>() {
+		List<Day> dayList = new ArrayList<>();
+		for(int i = 0; i < numberOfDays; i++) {
+			dayList.add(new Day(i, u.getHoursPerDay()));
+		}
+		PriorityQueue<POI> pq = new PriorityQueue<POI>(new Comparator<POI>() {
 			@Override
-			public int compare(Views a, Views b) {
-				if(a.getRate() == b.getRate()) {
+			public int compare(POI a, POI b) {
+				if(a.getRATING() == b.getRATING()) {
 					return 0;
 				} else {
-					return (int)(b.getRate() - a.getRate());
+					return (int)(b.getRATING() - a.getRATING());
 				}
 			}
 		});
-		// add views from front-end to pq
+		// add POIs from front-end to pq
 		for(int i = 0; i < listFromFront.size(); i++) {
-			if(listFromFront.get(i).getHoursNeeded() <= hoursPerDay) {
+			if(listFromFront.get(i).getDURATION() <= hoursPerDay) {
 				pq.offer(listFromFront.get(i));
 			}
 		}
-		List<ListHourPair> pairList = new ArrayList<>();
-		// initialize pair list with hoursPerDay and empty List
-		for(int i = 0; i < numberOfDays; i++) {
-			pairList.add(new ListHourPair(hoursPerDay, new ArrayList<Views>()));
-		}
-		int indexOfPair = 0;
+	
+		int index = 0;
 		// check availability and assign views to each day
-		while(indexOfPair < pairList.size() && !pq.isEmpty()) {
-			Views cur = pq.peek();
-			if(cur.getHoursNeeded() <= pairList.get(indexOfPair).hoursRemain) {
-				pairList.get(indexOfPair).list.add(pq.poll());
+		while(index < dayList.size() && !pq.isEmpty()) {
+			POI cur = pq.peek();
+			if(cur.getDURATION() <= dayList.get(index).hoursRemain) {
+				dayList.get(index).dailyPOI.add(pq.poll());
+				dayList.get(index).hoursRemain -= cur.getDURATION();
 			} else {
-				indexOfPair++;
+				index++;
 			}
 		}
-		indexOfPair = 0;
+		index = 0;
 		if(pq.isEmpty()) {
-			return formResult(pairList);
+			return dayList;
 		} else {
 			// do the process again to fill more views
-			while(indexOfPair < pairList.size() && !pq.isEmpty()) {
-				Views cur = pq.peek();
-				if(cur.getHoursNeeded() <= pairList.get(indexOfPair).hoursRemain) {
-					pairList.get(indexOfPair).list.add(pq.poll());
+			while(index < dayList.size() && !pq.isEmpty()) {
+				POI cur = pq.peek();
+				if(cur.getDURATION() <= dayList.get(index).hoursRemain) {
+					dayList.get(index).dailyPOI.add(pq.poll());
+					dayList.get(index).hoursRemain -= cur.getDURATION();
 				} else {
-					indexOfPair++;
+					index++;
 				}
 			}
-			return formResult(pairList);
 		}
-	}
-	private static List<List<Views>> formResult(List<ListHourPair> pairList){
-		List<List<Views>> res = new ArrayList<>();
-		for(int i = 0; i < pairList.size(); i++) {
-			if(pairList.get(i).list.size() != 0) {
-				res.add(pairList.get(i).list);
-			}
-		}
-		return res;
+		return dayList;
 	}
 }
