@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 /**
  * Servlet implementation class RecommendPath
  */
-@WebServlet("/RecommendPath")
+@WebServlet("/path")
 public class RecommendPath extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
@@ -25,16 +25,22 @@ public class RecommendPath extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		response.getWriter().append("Served at: asdf").append(request.getContextPath());
+		
+		
+		
 	}
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		// TODO Auto-generated method stub
-		doGet(request, response);
+		
+		
+		//take input List of Views
+		
+		//generate a list with our algorightm
+		
+		//return it to front-end
 	}
 
 }
