@@ -1,5 +1,53 @@
 package rpc;
 
-public class RpcHelper {
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+public class RpcHelper {
+	// Writes a JSONArray to http response.
+		public static void writeJsonArray(HttpServletResponse response, JSONArray array) throws IOException{
+			response.setContentType("application/json");
+			//The Access-Control-Allow-Origin response header indicates whether the response 
+			//can be shared with requesting code from the given origin.
+			response.setHeader("Access-Control-Allow-Origin", "*");
+			//Prints formatted representations of objects to a text-output stream.
+			PrintWriter out = response.getWriter();	
+			out.print(array);
+			out.close();
+
+		}
+
+		// Writes a JSONObject to http response.
+			public static void writeJsonObject(HttpServletResponse response, JSONObject obj) throws IOException {
+				response.setContentType("application/json");
+				response.setHeader("Access-Control-Allow-Origin", "*");
+				PrintWriter out = response.getWriter();	
+				out.print(obj);
+				out.close();
+			}
+			
+			// Parses a JSONObject from http request.
+			public static JSONObject readJSONObject(HttpServletRequest request) {
+		   	   	StringBuilder sBuilder = new StringBuilder();
+		   	   	try (BufferedReader reader = request.getReader()) {
+		   	   		String line = null;
+		   	   		while((line = reader.readLine()) != null) {
+		   	   			sBuilder.append(line);
+		   	   		}
+		   	   		return new JSONObject(sBuilder.toString());
+		   		 
+		   	   	} catch (Exception e) {
+		   	   		e.printStackTrace();
+		   	   	} 
+		   	   	return new JSONObject();
+		    }
+
+			
 }
